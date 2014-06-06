@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2008-2013 VMware, Inc. All Rights Reserved.
+# Copyright (c) 2014 VMware, Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,9 @@
 # limitations under the License.
 
 """
-A Python script for changing the name of an object. Demonstrates the use
-of tasks in an asynchronous way.
+A Python script for power cycling a virtual machine. Demonstrates the use
+of tasks in an asynchronous way. And how to answer virtual machine
+questions in the middle of power operations.
 """
 
 import atexit

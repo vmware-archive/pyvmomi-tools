@@ -111,13 +111,11 @@ def cursor():
 
 c = cursor()
 
-task.wait(timeout=30,
-          queued=lambda t, *args, **kwargs: sys.stdout.write(
-              '\rqueued %s' % c.next()),
-          running=lambda t, *args, **kwargs: sys.stdout.write(
-              '\r\trunning %s' % c.next()),
-          success=lambda t, *args, **kwargs: sys.stdout.write('\r\t\tsuccess'),
-          error=lambda t, *args, **kwargs: sys.stdout.write('\r\t\t\terror!'))
+task.wait(timeout=1,
+          queued=lambda t: sys.stdout.write("in queue\n"),
+          running=lambda t: sys.stdout.write("is running\n"),
+          success=lambda t: sys.stdout.write("success!\n"),
+          error=lambda t: sys.stdout.write('error!\n'))
 print
 
 print

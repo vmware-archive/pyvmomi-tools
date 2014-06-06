@@ -104,20 +104,22 @@ if vm.runtime.powerState != vim.VirtualMachinePowerState.poweredOn:
     # We track the question ID & answer so we don't end up answering the same
     # questions repeatedly.
     answers = {}
-    while task.info.state not in [vim.TaskInfo.State.success,
-                                  vim.TaskInfo.State.error]:
 
+    def handle_question(current_task, virtual_machine):
         # we'll check for a question, if we find one, handle it,
         # Note: question is an optional attribute and this is how pyVmomi
         # handles optional attributes. They are marked as None.
-        if vm.runtime.question is not None:
-            question_id = vm.runtime.question.id
+        if virtual_machine.runtime.question is not None:
+            question_id = virtual_machine.runtime.question.id
             if question_id not in answers.keys():
-                answers[question_id] = answer_question(vm)
-                vm.AnswerVM(question_id, answers[question_id])
+                answer = answer_question(virtual_machine)
+                answers[question_id] = answer
+                virtual_machine.AnswerVM(question_id, answer)
 
         # create a spinning cursor so people don't kill the script...
         cli.cursor.spinner(task.info.state)
+
+    task.wait(vm, periodic=handle_question)
 
     if task.info.state == vim.TaskInfo.State.error:
         # some vSphere errors only come with their class and no other message

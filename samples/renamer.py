@@ -111,8 +111,7 @@ def cursor():
 
 c = cursor()
 
-# wait 30 seconds... then give up
-task.wait(30,
+task.wait(timeout=30,
           queued=lambda t, *args, **kwargs: sys.stdout.write(
               '\rqueued %s' % c.next()),
           running=lambda t, *args, **kwargs: sys.stdout.write(

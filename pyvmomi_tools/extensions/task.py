@@ -46,7 +46,7 @@ def build_task_filter(task):
     return filter
 
 
-def wait_for_task(task, timeout=None, *args, **kwargs):
+def wait_for_task(task, *args, **kwargs):
     """A helper method for blocking 'wait' based on the task class.
 
     This dynamic helper allows you to call .wait() on any task to keep the
@@ -84,7 +84,7 @@ def wait_for_task(task, timeout=None, *args, **kwargs):
     Simple callback use...
 
     code::
-        def output(task, state, *args, **kwargs):
+        def output(task, state, *args):
             print state
 
         rename_task.wait(queued=output,
@@ -93,15 +93,18 @@ def wait_for_task(task, timeout=None, *args, **kwargs):
                          error=output)
 
     Only on observed task status transition will the callback fire. That is
-    if the task is observed leaving queued and entering
+    if the task is observed leaving queued and entering running, then the
+    callback for 'running' is fired.
+
+    NOTE: *kwargs
 
     Callbacks with timeout
     ======================
     code::
-        def output(task, state, *args, **kwargs):
-            print state
+        def output(task):
+            print task.info.state
 
-        rename_task.wait(3,
+        rename_task.wait(timeout=3,
                          queued=output,
                          running=output,
                          success=output,
@@ -110,44 +113,60 @@ def wait_for_task(task, timeout=None, *args, **kwargs):
     The wait method will sleep 3 seconds before re-examining the task status
     again.
 
+    The periodic callback
+    =====================
+    code::
+        def check_for_question(task, virtual_machine):
+            if virtual_machine.runtime.question:
+                handle_vm_question(virtual_machine)
+
+        power_on_task.wait(virtual_machine, periodic=check_for_question)
+
+    You may have a situation where you need to periodically poll the state of
+    another object which might block your task's completion. An example of
+    this is the PowerOn_Task operation which can be blocked by a question
+    appearing on the VM's runtime. Use a periodic task to poll for such a
+    change in state and handle things.
+
     :type task: vim.Task
     :param task: any subclass of the vim.Task object
 
-    :type timeout: int
-    :param timeout: any integer, use None to indicate 'wait forever' if needed.
-
     :rtype None: returns or raises exception
 
-    :raises vim.DuplicateName: if name already exists
-    :raises vim.InvalidName: if there's something wrong with the name
-    :raises vim.RuntimeFault: for everything else
+    :raises vim.RuntimeFault:
     """
 
-    def no_op(task, *args, **kwargs):
+    def no_op(task, *args):
         pass
+
+    timeout = kwargs.get('timeout')
 
     queued_callback = kwargs.get('queued', no_op)
     running_callback = kwargs.get('running', no_op)
     success_callback = kwargs.get('success', no_op)
     error_callback = kwargs.get('error', no_op)
 
+    periodic_callback = kwargs.get('periodic', no_op)
+
     last_state = None
     while True:
+        periodic_callback(task, *args)
+
         if last_state != task.info.state:
             last_state = task.info.state
 
             if last_state == vim.TaskInfo.State.success:
-                success_callback(task, *args, **kwargs)
+                success_callback(task, *args)
                 return
 
             elif last_state == vim.TaskInfo.State.queued:
-                queued_callback(task, *args, **kwargs)
+                queued_callback(task, *args)
 
             elif last_state == vim.TaskInfo.State.running:
-                running_callback(task, *args, **kwargs)
+                running_callback(task, *args)
 
             elif last_state == vim.TaskInfo.State.error:
-                error_callback(task, *args, **kwargs)
+                error_callback(task, *args)
                 raise task.info.error
 
         if timeout is not None:

@@ -6,6 +6,11 @@ pyvmomi-tools
 This project is an incubator project for additional pyVmomi based tools and
 libraries as needed by the development community.
 
+Warning
+=======
+
+pyVmomi tools is currently in Alpha and is experimental, use at your own risk.
+
 Why
 ===
 

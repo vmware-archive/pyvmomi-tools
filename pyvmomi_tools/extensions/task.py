@@ -53,7 +53,132 @@ def wait_for_task(task, *args, **kwargs):
     python process from advancing until the task is completed on the vCenter
     or ESX host on which the task is actually running.
 
-    NOTE: timeout of 0 indicates 'check once, then return'
+    NOTE: sleep_seconds of 0 indicates check as fast as possible. This
+    mode will generate a great deal of network traffic.
+
+    Usage Examples
+    ==============
+
+    This method can be used in a number of ways. It is intended to be
+    dynamically injected into the vim.Task object and these samples indicate
+    that. The method may, however, be used free-standing if you prefer.
+
+    Given an initial call similar to this...
+
+    code::
+        rename_task = datastore.Rename('new_name')
+
+
+    simple use case
+    ===============
+
+    code::
+        rename_task.wait()
+
+    The main python process will block until the task completes on vSphere.
+
+    use with callbacks
+    ==================
+
+    Simple callback use...
+
+    code::
+        def output(task, *args):
+            print task.info.state
+
+        rename_task.wait(queued=output,
+                         running=output,
+                         success=output,
+                         error=output)
+
+    Only on observed task status transition will the callback fire. That is
+    if the task is observed leaving queued and entering running, then the
+    callback for 'running' is fired.
+
+    Callbacks with sleep_seconds
+    ============================
+    code::
+        def output(task):
+            print task.info.state
+
+        rename_task.wait(queued=output,
+                         running=output,
+                         success=output,
+                         error=output)
+
+
+    :type task: vim.Task
+    :param task: any subclass of the vim.Task object
+
+    :rtype None: returns or raises exception
+
+    :raises vim.RuntimeFault:
+    """
+
+    def no_op(task, *args):
+        pass
+
+    queued_callback = kwargs.get('queued', no_op)
+    running_callback = kwargs.get('running', no_op)
+    success_callback = kwargs.get('success', no_op)
+    error_callback = kwargs.get('error', no_op)
+
+    si = connect.GetSi()
+    pc = si.content.propertyCollector
+    filter = build_task_filter(task)
+
+    try:
+        version, state = None, None
+
+        # Loop looking for updates till the state moves to a completed state.
+        waiting = True
+        while waiting:
+            update = pc.WaitForUpdates(version)
+            version = update.version
+            for filterSet in update.filterSet:
+                for objSet in filterSet.objectSet:
+                    task = objSet.obj
+                    for change in objSet.changeSet:
+                        if change.name == 'info':
+                            state = change.val.state
+                        elif change.name == 'info.state':
+                            state = change.val
+                        else:
+                            continue
+
+                        if state == vim.TaskInfo.State.success:
+                            success_callback(task, *args)
+                            waiting = False
+
+                        elif state == vim.TaskInfo.State.queued:
+                            queued_callback(task, *args)
+
+                        elif state == vim.TaskInfo.State.running:
+                            running_callback(task, *args)
+
+                        elif state == vim.TaskInfo.State.error:
+                            error_callback(task, *args)
+                            raise task.info.error
+
+    finally:
+        if filter:
+            filter.Destroy()
+
+
+def poll_task(task, *args, **kwargs):
+    """A helper method for polling state changes on the task class.
+
+    Similar to wait_for_task this helper introduces a sleep_seconds optional
+    kwarg and a 'periodic' call back that can be used to check vCenter status
+    or interact with vCenter periodically while we wait for a task to complete.
+    The prime use-case for this utility is the power_on case described below.
+
+    This dynamic helper allows you to call .wait() on any task to keep the
+    python process from advancing until the task is completed on the vCenter
+    or ESX host on which the task is actually running.
+
+    NOTE: sleep_seconds of 0 indicates check as fast as possible. This
+    mode will generate a great deal of network traffic.
 
     Usage Examples
     ==============
@@ -78,6 +203,22 @@ def wait_for_task(task, *args, **kwargs):
     The main python process will block until the task completes on vSphere
     the datastore object will be updated automatically with the new name.
 
+    use with sleep_seconds
+    ======================
+    code::
+        rename_task.wait(sleep_seconds=0)
+
+    The default sleep_seconds is 1, meaning the vCenter server is polled at
+    most 1 time every 1 second. If you set sleep_seconds to 0, the vCenter
+    server will be polled as fast as possible. This has the tendency to create
+    a great deal of network traffic.
+
+    code::
+        rename_task.wait(sleep_seconds=3)
+
+    The process will wait 3 seconds between polling vCenter for task status.
+    The default is to wait 1 second between polling vCenter for task updates.
+
     use with callbacks
     ==================
 
@@ -98,13 +239,13 @@ def wait_for_task(task, *args, **kwargs):
 
     NOTE: *kwargs
 
-    Callbacks with timeout
-    ======================
+    Callbacks with sleep_seconds
+    ============================
     code::
         def output(task):
             print task.info.state
 
-        rename_task.wait(timeout=3,
+        rename_task.wait(sleep_seconds=3,
                          queued=output,
                          running=output,
                          success=output,
@@ -139,7 +280,7 @@ def wait_for_task(task, *args, **kwargs):
     def no_op(task, *args):
         pass
 
-    timeout = kwargs.get('timeout')
+    sleep_seconds = kwargs.get('sleep_seconds', 1)
 
     queued_callback = kwargs.get('queued', no_op)
     running_callback = kwargs.get('running', no_op)
@@ -169,10 +310,11 @@ def wait_for_task(task, *args, **kwargs):
                 error_callback(task, *args)
                 raise task.info.error
 
-        if timeout is not None:
-            time.sleep(timeout)
+        if sleep_seconds is not None:
+            time.sleep(sleep_seconds)
 
 
 # NOTE: This kind of injection usually goes at the *bottom* of a file.
+vim.Task.poll = poll_task
 vim.Task.wait = wait_for_task
 vim.Task.filter = property(build_task_filter)

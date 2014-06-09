@@ -119,7 +119,7 @@ if vm.runtime.powerState != vim.VirtualMachinePowerState.poweredOn:
         # create a spinning cursor so people don't kill the script...
         cli.cursor.spinner(task.info.state)
 
-    task.wait(vm, periodic=handle_question)
+    task.poll(vm, periodic=handle_question)
 
     if task.info.state == vim.TaskInfo.State.error:
         # some vSphere errors only come with their class and no other message

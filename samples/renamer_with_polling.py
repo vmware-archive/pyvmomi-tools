@@ -101,7 +101,7 @@ task = entity.Rename(new_name)
 
 print "task status: "
 
-# demonstrate callbacks firing only on task state-transition
+# demonstrate task state polling
 while task.is_alive:
     cursor.spinner('renaming')
 print

@@ -54,7 +54,7 @@ for vm in root_folder.find_by(match_name, args.name):
         task = vm.PowerOff()
         task.wait(success=lambda t: sys.stdout.write("\rpower off\n"))
 
-print "using task extensions"
+print "using task callback extensions"
 for vm in root_folder.find_by(match_name, args.name):
     print "Found VirtualMachine: %s Name: %s" % (vm, vm.name)
 

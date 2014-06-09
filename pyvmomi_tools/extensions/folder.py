@@ -71,6 +71,25 @@ def find_by(folder, matcher_method, *args, **kwargs):
             entity_stack.extend(entity.childEntity)
 
 
+def find_all_by_name(folder, name):
+    """Search for all entities with name.
+
+    This method will search within the folder for any object with the name
+    supplied.
+
+    :type folder: vim.Folder
+    :param folder: The top most folder to recursively search for the child.
+
+    :type name: types.StringTypes
+    :param name: Name of the child you are looking for, assumed to be unique.
+
+    :rtype types.ListType: contains [<vim.ManagedEntity>]
+    :return: all the entities found with the name 'name'.
+    """
+    # return all entities by running the generator to it's end
+    list(find_by(folder, lambda e: e.name == name))
+
+
 def find_by_name(folder, name):
     """Search for an entity by name.
 
@@ -80,7 +99,7 @@ def find_by_name(folder, name):
     :type folder: vim.Folder
     :param folder: The top most folder to recursively search for the child.
 
-    :type name: String
+    :type name: types.StringTypes
     :param name: Name of the child you are looking for, assumed to be unique.
 
     :rtype vim.ManagedEntity:
@@ -94,3 +113,4 @@ def find_by_name(folder, name):
 # injection into the core vim.Folder class....
 vim.Folder.find_by = find_by
 vim.Folder.find_by_name = find_by_name
+vim.Folder.find_all_by_name = find_all_by_name

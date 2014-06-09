@@ -101,16 +101,7 @@ task = entity.Rename(new_name)
 
 print "task status: "
 
-
-# a pretty print cursor so you don't think the program has hung
-def cursor():
-    while True:
-        for c in '|/-\\':
-            yield c
-
-
-c = cursor()
-
+# demonstrate callbacks firing only on task state-transition
 task.wait(timeout=1,
           queued=lambda t: sys.stdout.write("in queue\n"),
           running=lambda t: sys.stdout.write("is running\n"),

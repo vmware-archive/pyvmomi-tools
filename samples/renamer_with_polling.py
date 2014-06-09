@@ -21,9 +21,9 @@ of tasks in an asynchronous way.
 import atexit
 import argparse
 import getpass
-import sys
 
 from pyVim import connect
+from pyvmomi_tools.cli import cursor
 from pyvmomi_tools import extensions
 
 def get_args():
@@ -102,10 +102,8 @@ task = entity.Rename(new_name)
 print "task status: "
 
 # demonstrate callbacks firing only on task state-transition
-task.wait(queued=lambda t: sys.stdout.write("in queue\n"),
-          running=lambda t: sys.stdout.write("is running\n"),
-          success=lambda t: sys.stdout.write("success!\n"),
-          error=lambda t: sys.stdout.write('error!\n'))
+while task.is_alive:
+    cursor.spinner('renaming')
 print
 
 print

@@ -317,4 +317,6 @@ def poll_task(task, *args, **kwargs):
 # NOTE: This kind of injection usually goes at the *bottom* of a file.
 vim.Task.poll = poll_task
 vim.Task.wait = wait_for_task
+vim.Task.is_alive = property(lambda t: t.info.state not in [
+    vim.TaskInfo.State.success, vim.TaskInfo.State.error])
 vim.Task.filter = property(build_task_filter)

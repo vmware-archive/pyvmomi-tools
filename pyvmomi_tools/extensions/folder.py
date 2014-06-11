@@ -87,7 +87,7 @@ def find_all_by_name(folder, name):
     :return: all the entities found with the name 'name'.
     """
     # return all entities by running the generator to it's end
-    list(find_by(folder, lambda e: e.name == name))
+    return list(find_by(folder, lambda e: e.name == name))
 
 
 def find_by_name(folder, name):

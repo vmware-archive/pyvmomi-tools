@@ -53,9 +53,6 @@ def wait_for_task(task, *args, **kwargs):
     python process from advancing until the task is completed on the vCenter
     or ESX host on which the task is actually running.
 
-    NOTE: sleep_seconds of 0 indicates check as fast as possible. This
-    mode will generate a great deal of network traffic.
-
     Usage Examples
     ==============
 

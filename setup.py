@@ -34,7 +34,7 @@ setup(name='pyvmomi-tools',
       long_description=read('README.md'),
       classifiers=[
           "License :: OSI Approved :: Apache Software License",
-          "Development Status :: 4 - Beta",
+          "Development Status :: 1 - Planning",
           "Environment :: No Input/Output (Daemon)",
           "Intended Audience :: Information Technology",
           "Intended Audience :: System Administrators",

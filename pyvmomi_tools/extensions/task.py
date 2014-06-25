@@ -92,18 +92,6 @@ def wait_for_task(task, *args, **kwargs):
     if the task is observed leaving queued and entering running, then the
     callback for 'running' is fired.
 
-    Callbacks with sleep_seconds
-    ============================
-    code::
-        def output(task):
-            print task.info.state
-
-        rename_task.wait(queued=output,
-                         running=output,
-                         success=output,
-                         error=output)
-
-
     :type task: vim.Task
     :param task: any subclass of the vim.Task object
 

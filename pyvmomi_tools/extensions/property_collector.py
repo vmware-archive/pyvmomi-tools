@@ -31,8 +31,8 @@ def build_object_filter(property_collector, managed_object):
     :return: a filter you can use
     """
     filter_spec = _build_filter_spec(managed_object)
-    filter = property_collector.CreateFilter(filter_spec, True)
-    return filter
+    pfilter = property_collector.CreateFilter(filter_spec, True)
+    return pfilter
 
 
 # inject into the PropertyCollector class

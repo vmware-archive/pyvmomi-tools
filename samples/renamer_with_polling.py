@@ -24,7 +24,7 @@ import getpass
 
 from pyVim import connect
 from pyvmomi_tools.cli import cursor
-from pyvmomi_tools import extensions
+
 
 def get_args():
     parser = argparse.ArgumentParser()

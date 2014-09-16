@@ -3,9 +3,7 @@ import argparse
 import sys
 
 from pyVim import connect
-
 from pyVmomi import vim
-
 from pyvmomi_tools import cli
 
 
@@ -68,4 +66,3 @@ for vm in root_folder.find_by(match_name, args.name):
             periodic=lambda t: sys.stdout.write('\ron\n'),
             success=lambda t: vm.PowerOff().poll(
                 periodic=lambda t: sys.stdout.write("\roff\n")))
-

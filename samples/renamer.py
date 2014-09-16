@@ -24,7 +24,7 @@ import getpass
 import sys
 
 from pyVim import connect
-from pyvmomi_tools import extensions
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -81,7 +81,8 @@ atexit.register(connect.Disconnect, si)
 entity = si.content.rootFolder.find_by_name(args.name)
 
 if entity is None:
-    print "A object named %s could not be found" % args.name
+    print
+    "A object named %s could not be found" % args.name
     exit()
 
 if args.new_name:
@@ -91,15 +92,18 @@ else:
     new_name = args.name + "0"
 
 print
-print "name        : %s" % entity.name
 print
-print "    renaming from %s to %s" % (args.name, new_name)
+"name        : %s" % entity.name
+print
+print
+"    renaming from %s to %s" % (args.name, new_name)
 print
 
 # rename creates a task...
 task = entity.Rename(new_name)
 
-print "task status: "
+print
+"task status: "
 
 # demonstrate callbacks firing only on task state-transition
 task.wait(queued=lambda t: sys.stdout.write("in queue\n"),
@@ -109,5 +113,6 @@ task.wait(queued=lambda t: sys.stdout.write("in queue\n"),
 print
 
 print
-print "rename finished"
+print
+"rename finished"
 print

@@ -1,9 +1,12 @@
+from __future__ import print_function
+
 import atexit
 import argparse
 import sys
 
 from pyVim import connect
 from pyVmomi import vim
+
 from pyvmomi_tools import cli
 
 
@@ -37,9 +40,9 @@ def match_name(obj, name):
 
 root_folder = si.content.rootFolder
 
-print "using wait_for_updates"
+print("using wait_for_updates")
 for vm in root_folder.find_by(match_name, args.name):
-    print "Found VirtualMachine: %s Name: %s" % (vm, vm.name)
+    print("Found VirtualMachine: {0} Name: {1}", vm, vm.name)
 
     if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
         task = vm.PowerOff()
@@ -52,9 +55,9 @@ for vm in root_folder.find_by(match_name, args.name):
         task = vm.PowerOff()
         task.wait(success=lambda t: sys.stdout.write("\rpower off\n"))
 
-print "using task callback extensions"
+print("using task callback extensions")
 for vm in root_folder.find_by(match_name, args.name):
-    print "Found VirtualMachine: %s Name: %s" % (vm, vm.name)
+    print("Found VirtualMachine: {0} Name: {1}", vm, vm.name)
 
     if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
         vm.PowerOff().poll(

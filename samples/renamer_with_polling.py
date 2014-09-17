@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import print_function
 
 """
 A Python script for changing the name of an object. Demonstrates the use
@@ -81,7 +82,7 @@ atexit.register(connect.Disconnect, si)
 entity = si.content.rootFolder.find_by_name(args.name)
 
 if entity is None:
-    print "A object named %s could not be found" % args.name
+    print("A object named {0} could not be found", args.name)
     exit()
 
 if args.new_name:
@@ -90,22 +91,16 @@ else:
     # just because we want the script to do *something*
     new_name = args.name + "0"
 
-print
-print "name        : %s" % entity.name
-print
-print "    renaming from %s to %s" % (args.name, new_name)
-print
+print("\nname        : {0}\n", entity.name)
+print("\n    renaming from {0} to {1}\n", args.name, new_name)
 
 # rename creates a task...
 task = entity.Rename(new_name)
 
-print "task status: "
+print("task status: \n")
 
 # demonstrate task state polling
 while task.is_alive:
     cursor.spinner('renaming')
-print
 
-print
-print "rename finished"
-print
+print("\n\n\nrename finished\n")

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import print_function
 
 """
 A Python script for power cycling a virtual machine. Demonstrates the use
@@ -21,6 +22,7 @@ questions in the middle of power operations.
 
 import atexit
 import argparse
+from six import PY2
 import sys
 import textwrap
 
@@ -28,6 +30,9 @@ from pyVim import connect
 from pyVmomi import vim
 
 from pyvmomi_tools import cli
+
+if PY2:
+    input = raw_input
 
 
 def get_args():
@@ -55,22 +60,22 @@ atexit.register(connect.Disconnect, si)
 # search the whole inventory tree recursively... a brutish but effective tactic
 vm = si.content.rootFolder.find_by_name(args.name)
 if not isinstance(vm, vim.VirtualMachine):
-    print "could not find a virtual machine with the name %s" % args.name
+    print("could not find a virtual machine with the name {0}", args.name)
     sys.exit(-1)
 
-print "Found VirtualMachine: %s Name: %s" % (vm, vm.name)
+print("Found VirtualMachine: {0} Name: {1}", vm, vm.name)
 
 if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
     # using a dynamic class extension for power_off
     # this is a blocking method call and the script will pause
     # while the machine powers off.
-    print "powering off..."
+    print("powering off...")
     vm.power_off()
-    print "power is off."
+    print("power is off.")
 
 
 def answer_question(vm):
-    print "\n"
+    print("\n")
     choices = vm.runtime.question.choice.choiceInfo
     default_option = None
     if vm.runtime.question.choice.defaultIndex is not None:
@@ -78,15 +83,15 @@ def answer_question(vm):
         default_option = choices[ii]
     choice = None
     while choice not in [o.key for o in choices]:
-        print "VM power on is paused by this question:\n\n"
-        print "\n".join(textwrap.wrap(vm.runtime.question.text, 60))
+        print("VM power on is paused by this question:\n\n")
+        print("\n".join(textwrap.wrap(vm.runtime.question.text, 60)))
         for option in choices:
-            print "\t %s: %s " % (option.key, option.label)
+            print("\t {0}: {1} ", option.key, option.label)
         if default_option is not None:
-            print "default (%s): %s\n" % (default_option.label,
-                                          default_option.key)
-        choice = raw_input("\nchoice number: ").strip()
-        print "..."
+            print("default ({0}): {1}\n", default_option.label,
+                  default_option.key)
+        choice = input("\nchoice number: ").strip()
+        print("...")
     return choice
 
 
@@ -95,7 +100,7 @@ def answer_question(vm):
 # poll our task repeatedly and also check for any run-time issues. This
 # code deals with a common problem, what to do if a VM question pops up
 # and how do you handle it in the API?
-print "powering on VM %s" % vm.name
+print("powering on VM {0}", vm.name)
 if vm.runtime.powerState != vim.VirtualMachinePowerState.poweredOn:
 
     # now we get to work... calling the vSphere API generates a task...
@@ -123,12 +128,12 @@ if vm.runtime.powerState != vim.VirtualMachinePowerState.poweredOn:
 
     if task.info.state == vim.TaskInfo.State.error:
         # some vSphere errors only come with their class and no other message
-        print "error type: %s" % task.info.error.__class__.__name__
-        print "found cause: %s" % task.info.error.faultCause
+        print("error type: {0}", task.info.error.__class__.__name__)
+        print("found cause: {0}", task.info.error.faultCause)
         for fault_msg in task.info.error.faultMessage:
-            print fault_msg.key
-            print fault_msg.message
+            print(fault_msg.key)
+            print(fault_msg.message)
         sys.exit(-1)
 
-print
+print(".")
 sys.exit(0)

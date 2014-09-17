@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import print_function
 
 """
 A Python script for changing the name of an object. Demonstrates the use
@@ -24,7 +25,7 @@ import getpass
 import sys
 
 from pyVim import connect
-from pyvmomi_tools import extensions
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -81,7 +82,7 @@ atexit.register(connect.Disconnect, si)
 entity = si.content.rootFolder.find_by_name(args.name)
 
 if entity is None:
-    print "A object named %s could not be found" % args.name
+    print("A object named {0} could not be found", args.name)
     exit()
 
 if args.new_name:
@@ -90,24 +91,24 @@ else:
     # just because we want the script to do *something*
     new_name = args.name + "0"
 
-print
-print "name        : %s" % entity.name
-print
-print "    renaming from %s to %s" % (args.name, new_name)
-print
+print()
+print("name        : {0}", entity.name)
+print()
+print("    renaming from {0} to {1}", args.name, new_name)
+print()
 
 # rename creates a task...
 task = entity.Rename(new_name)
 
-print "task status: "
+print("task status: ")
 
 # demonstrate callbacks firing only on task state-transition
 task.wait(queued=lambda t: sys.stdout.write("in queue\n"),
           running=lambda t: sys.stdout.write("is running\n"),
           success=lambda t: sys.stdout.write("success!\n"),
           error=lambda t: sys.stdout.write('error!\n'))
-print
+print()
 
-print
-print "rename finished"
-print
+print()
+print("rename finished")
+print()

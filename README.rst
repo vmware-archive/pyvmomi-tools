@@ -19,7 +19,7 @@ utilities for themselves. This project represents a place for everyone to
 share those tools with each other.
 
 Tool Incubator
-===============
+==============
 
 Utilities started here may be graduated to free-standing libraries distributed
 independently of this library. A graduated library would be expressed as a
